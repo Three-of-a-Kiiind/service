@@ -36,7 +36,10 @@ pipeline {
                         sh "docker push michael2511/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION}"
 
                         sh "git tag ${env.IMAGE_TAG}"
-                        sh "git push https://${GITHUB_TOKEN}@github.com/michael2511/service.git ${env.IMAGE_TAG}"
+                        sh "git push https://${GITHUB_TOKEN}@github.com/Three-of-a-Kiiind/service.git ${env.IMAGE_TAG}"
+
+                        // sh "git push https://$GITHUB_TOKEN@github.com/${DOCKER_PASSWORD_USR}/service.git ${env.IMAGE_TAG}"
+
                     }
                 }
             }
