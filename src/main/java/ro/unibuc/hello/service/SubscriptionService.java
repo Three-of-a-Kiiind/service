@@ -2,6 +2,7 @@ package ro.unibuc.hello.service;
 
 import java.util.*;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,18 +21,30 @@ public class SubscriptionService {
     @Autowired
     private SubscriptionRepository subscriptionRepository;
 
+    @Autowired
+    private MeterRegistry meterRegistry;
+
     public List<Subscription> getAllSubscriptions() {
         List<SubscriptionEntity> entities = subscriptionRepository.findAll();
+
+        meterRegistry.counter("subscriptions.list.all").increment();
+
         return convert(entities);
     }
 
     public List<Subscription> getSubscriptionsByTier(int tier) {
         List<SubscriptionEntity> entities = subscriptionRepository.findByTier(tier);
+
+        meterRegistry.counter("subscriptions.list.by_tier").increment();
+
         return convert(entities);
     }
 
     public List<Subscription> getSubscriptionsUpToTier(int tier) {
         List<SubscriptionEntity> entities = subscriptionRepository.findByTierLessThanEqual(tier);
+
+        meterRegistry.counter("subscriptions.list.up_to_tier").increment();
+
         return convert(entities);
     }
 
@@ -52,11 +65,17 @@ public class SubscriptionService {
 
     public List<Subscription> getSubscriptionsByMaxPrice(int price) {
         List<SubscriptionEntity> entities = subscriptionRepository.findByPriceLessThanEqual(price);
+
+        meterRegistry.counter("subscriptions.list.by_price").increment();
+
         return convert(entities);
     }
 
     public List<Subscription> getSubscriptionsByTierAndMaxPrice(int tier, int price) {
         List<SubscriptionEntity> entities = subscriptionRepository.findByTierAndPriceLessThanEqual(tier, price);
+
+        meterRegistry.counter("subscriptions.list.by_tier_by_price").increment();
+        
         return convert(entities);
     }
 
@@ -70,7 +89,10 @@ public class SubscriptionService {
         entity.setTier(subscription.getTier());
         entity.setPrice(subscription.getPrice());
         subscriptionRepository.save(entity);
-        return new Subscription(entity.getTier(), entity.getPrice());
+
+        meterRegistry.counter("subscriptions.created").increment();
+
+        return new Subscription(entity.getId(), entity.getTier(), entity.getPrice());
     }
 
     public boolean deleteSubscription(String id) {
@@ -78,6 +100,9 @@ public class SubscriptionService {
         
         if (entity.isPresent()) {
             subscriptionRepository.delete(entity.get());
+
+            meterRegistry.counter("subscriptions.deleted").increment();
+
             return true;
         }
         

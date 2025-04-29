@@ -1,9 +1,12 @@
 package ro.unibuc.hello.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import ro.unibuc.hello.data.SubscriptionEntity;
 import ro.unibuc.hello.data.SubscriptionRepository;
@@ -24,6 +27,9 @@ public class SubscriptionServiceTest {
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
+    @Mock
+    private MeterRegistry meterRegistry;
+
     @InjectMocks
     private SubscriptionService subscriptionService;
 
@@ -41,6 +47,10 @@ public class SubscriptionServiceTest {
         );
         when(subscriptionRepository.findAll()).thenReturn(entities);
 
+        Counter counterMock = mock(Counter.class);
+        when(meterRegistry.counter("subscriptions.list.all")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         // Act
         List<Subscription> result = subscriptionService.getAllSubscriptions();
 
@@ -50,6 +60,7 @@ public class SubscriptionServiceTest {
         assertEquals(10, result.get(0).getPrice());
         assertEquals(2, result.get(1).getTier());
         assertEquals(20, result.get(1).getPrice());
+        verify(counterMock, times(1)).increment();
     }
 
     @Test
@@ -91,6 +102,10 @@ public class SubscriptionServiceTest {
         List<SubscriptionEntity> entities = Collections.singletonList(new SubscriptionEntity(tier, 10));
         when(subscriptionRepository.findByTier(tier)).thenReturn(entities);
 
+        Counter counterMock = mock(Counter.class);
+        when(meterRegistry.counter("subscriptions.list.by_tier")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         // Act
         List<Subscription> result = subscriptionService.getSubscriptionsByTier(tier);
 
@@ -98,6 +113,7 @@ public class SubscriptionServiceTest {
         assertEquals(1, result.size());
         assertEquals(tier, result.get(0).getTier());
         assertEquals(10, result.get(0).getPrice());
+        verify(counterMock, times(1)).increment();
     }
 
     @Test
@@ -110,6 +126,10 @@ public class SubscriptionServiceTest {
         );
         when(subscriptionRepository.findByTierLessThanEqual(tier)).thenReturn(entities);
 
+        Counter counterMock = mock(Counter.class);
+        when(meterRegistry.counter("subscriptions.list.up_to_tier")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         // Act
         List<Subscription> result = subscriptionService.getSubscriptionsUpToTier(tier);
 
@@ -119,6 +139,7 @@ public class SubscriptionServiceTest {
         assertEquals(10, result.get(0).getPrice());
         assertEquals(2, result.get(1).getTier());
         assertEquals(20, result.get(1).getPrice());
+        verify(counterMock, times(1)).increment();
     }
 
     @Test
@@ -126,6 +147,11 @@ public class SubscriptionServiceTest {
         // Arrange
         Subscription subscription = new Subscription(1, 10);
         when(subscriptionRepository.existsByTier(1)).thenReturn(false);
+
+        Counter counterMock = mock(Counter.class);
+        when(meterRegistry.counter("subscriptions.created")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         when(subscriptionRepository.save(any(SubscriptionEntity.class)))
             .thenAnswer(invocation -> {
                 SubscriptionEntity entity = invocation.getArgument(0);
@@ -140,6 +166,7 @@ public class SubscriptionServiceTest {
         assertEquals(1, result.getTier());
         assertEquals(10, result.getPrice());
         verify(subscriptionRepository).save(any(SubscriptionEntity.class));
+        verify(counterMock, times(1)).increment();
     }
 
     @Test
@@ -161,12 +188,17 @@ public class SubscriptionServiceTest {
         SubscriptionEntity entity = new SubscriptionEntity(1, 10);
         when(subscriptionRepository.findById(id)).thenReturn(Optional.of(entity));
 
+        Counter counterMock = mock(Counter.class);
+        when(meterRegistry.counter("subscriptions.deleted")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         // Act
         boolean result = subscriptionService.deleteSubscription(id);
 
         // Assert
         assertTrue(result);
         verify(subscriptionRepository).delete(entity);
+        verify(counterMock, times(1)).increment();
     }
 
     @Test
@@ -193,6 +225,10 @@ public class SubscriptionServiceTest {
         );
         when(subscriptionRepository.findByPriceLessThanEqual(price)).thenReturn(entities);
 
+        Counter counterMock = mock(Counter.class);
+        when(meterRegistry.counter("subscriptions.list.by_price")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         // Act
         List<Subscription> result = subscriptionService.getSubscriptionsByMaxPrice(price);
 
@@ -202,6 +238,7 @@ public class SubscriptionServiceTest {
         assertEquals(10, result.get(0).getPrice());
         assertEquals(2, result.get(1).getTier());
         assertEquals(20, result.get(1).getPrice());
+        verify(counterMock, times(1)).increment();
     }
 
     @Test
@@ -212,6 +249,10 @@ public class SubscriptionServiceTest {
         List<SubscriptionEntity> entities = Collections.singletonList(new SubscriptionEntity(tier, price));
         when(subscriptionRepository.findByTierAndPriceLessThanEqual(tier, price)).thenReturn(entities);
 
+        Counter counterMock = mock(Counter.class);
+        when(meterRegistry.counter("subscriptions.list.by_tier_by_price")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         // Act
         List<Subscription> result = subscriptionService.getSubscriptionsByTierAndMaxPrice(tier, price);
 
@@ -219,6 +260,7 @@ public class SubscriptionServiceTest {
         assertEquals(1, result.size());
         assertEquals(tier, result.get(0).getTier());
         assertEquals(price, result.get(0).getPrice());
+        verify(counterMock, times(1)).increment();
     }
 
 }

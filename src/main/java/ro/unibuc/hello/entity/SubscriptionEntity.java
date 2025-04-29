@@ -18,6 +18,12 @@ public class SubscriptionEntity {
         this.price = price;
     }
 
+    public SubscriptionEntity(String id, int tier, int price) {
+        this.id = id;
+        this.tier = tier;
+        this.price = price;
+    }
+
     public String getId() {
         return id;
     }
@@ -46,6 +52,6 @@ public class SubscriptionEntity {
     public String toString() {
         return String.format(
                 "Subscription[id='%s', tier='%d', price='%d']",
-                tier, price);
+                id, tier, price);
     }
 }
