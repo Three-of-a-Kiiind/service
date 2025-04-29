@@ -1,6 +1,6 @@
 services:
   hello:
-    image: hello-img
+    image: hello-img #
     build: .
     ports:
       - 8080:8080
