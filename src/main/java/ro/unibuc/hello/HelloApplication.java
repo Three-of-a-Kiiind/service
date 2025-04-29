@@ -20,8 +20,6 @@ import jakarta.annotation.PostConstruct;
 
 public class HelloApplication {
 
-	// @Autowired
-	// private InformationRepository informationRepository;
 	@Autowired
 	private GameRepository gamesRepository;
 	@Autowired

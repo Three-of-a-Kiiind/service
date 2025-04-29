@@ -8,6 +8,12 @@ public class Subscription {
 
     public Subscription() {}
 
+    public Subscription(String id, int tier, int price) {
+        this.id = id;
+        this.tier = tier;
+        this.price = price;
+    }
+
     public Subscription(int tier, int price) {
         this.tier = tier;
         this.price = price;

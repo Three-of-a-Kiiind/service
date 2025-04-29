@@ -23,7 +23,7 @@ GET http://localhost:8080/subscriptions
 
 GET http://localhost:8080/subscriptions
     ?tier=2
-    &price=100
+    &price=1000
 
 ### GET /subscriptions/uptotier
 
@@ -33,7 +33,7 @@ GET http://localhost:8080/subscriptions/uptotier
 ### POST /add-subscription
 
 POST http://localhost:8080/add-subscription
-    ?tier=2
+    ?tier=4
     &price=99
 
 ### POST /delete-subscription
