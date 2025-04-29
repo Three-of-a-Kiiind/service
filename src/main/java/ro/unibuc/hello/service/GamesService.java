@@ -2,7 +2,7 @@ package ro.unibuc.hello.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+import io.micrometer.core.instrument.MeterRegistry;
 import ro.unibuc.hello.data.GameEntity;
 import ro.unibuc.hello.data.GameRepository;
 import ro.unibuc.hello.dto.Game;
@@ -19,9 +19,12 @@ public class GamesService {
     @Autowired
     private GameRepository gameRepository;
 
+    @Autowired
+    private MeterRegistry metricsRegistry;
+
     public List<Game> getAllGames(){
         List<GameEntity> entities = gameRepository.findAll();
-
+        metricsRegistry.counter("games.get.all").increment();
         return convert(entities);
     }
 
@@ -33,6 +36,7 @@ public class GamesService {
 
     public List<Game> getGamebyId(String id){
         Optional<GameEntity> entity = gameRepository.findById(id);
+        metricsRegistry.counter("games.get.id").increment();
 
         List<Game> response = new ArrayList();
 
@@ -48,18 +52,20 @@ public class GamesService {
 
     public List<Game> getGamesByTitle(String title){
         List<GameEntity> entities = gameRepository.findByTitleLike(title);
-
+        metricsRegistry.counter("games.get.title").increment();
         return convert(entities);
     }
 
     public List<Game> getGamesByTitleAndTier(String title, int tier){
         List<GameEntity> entities = gameRepository.findByTitleLikeAndTierBetween(title, 0, tier + 1);
-
+        metricsRegistry.counter("games.get.id_and_title").increment();
         return convert(entities);
     }
 
     public Game saveGame(Game game){
         GameEntity entity = new GameEntity();
+        metricsRegistry.counter("games.save").increment();
+
         entity.setTier(game.getTier());
         entity.setTitle(game.getTitle());
         gameRepository.save(entity);
@@ -68,6 +74,7 @@ public class GamesService {
 
     public boolean deleteGame(String id){
         Optional<GameEntity> entity = gameRepository.findById(id);
+        metricsRegistry.counter("games.delete").increment();
 
         if(entity.isPresent()){
             gameRepository.delete(entity.get());

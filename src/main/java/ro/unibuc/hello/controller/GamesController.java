@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.annotation.Timed;
 import ro.unibuc.hello.dto.Game;
 import ro.unibuc.hello.exception.EntityNotFoundException;
 import ro.unibuc.hello.service.GamesService;
@@ -24,6 +26,8 @@ public class GamesController {
 
     @GetMapping("/games")
     @ResponseBody
+    @Timed(value = "hello.games.time", description = "Time taken to return games")
+    @Counted(value = "hello.games.count", description = "Times games were returned")
     public List<Game> getGames(
         @RequestParam("tier") Optional<Integer> tier,
         @RequestParam("id") Optional<String> id,

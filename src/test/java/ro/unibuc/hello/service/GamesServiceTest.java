@@ -1,10 +1,13 @@
 package ro.unibuc.hello.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -27,13 +30,15 @@ class GamesServiceTest {
     @Mock
     private GameRepository gameRepository;
 
+    @Mock
+    private MeterRegistry metricsRegistry;
+
     @InjectMocks
-    private GamesService gamesService = new GamesService();
+    private GamesService gamesService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        
     }
 
     @Test
@@ -44,6 +49,10 @@ class GamesServiceTest {
         GameEntity entity4 = new GameEntity("4", "Cyberpunk 2077", 3);
 
         when(gameRepository.findAll()).thenReturn(new ArrayList<GameEntity>(Arrays.asList(entity1, entity2, entity3, entity4)));
+
+        Counter counterMock = mock(Counter.class);
+        when(metricsRegistry.counter("games.get.all")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
 
         List<Game> games = gamesService.getAllGames();
 
@@ -73,6 +82,10 @@ class GamesServiceTest {
 
         when(gameRepository.findById("1")).thenReturn(Optional.of(entity1));
 
+        Counter counterMock = mock(Counter.class);
+        when(metricsRegistry.counter("games.get.id")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+
         List<Game> games = gamesService.getGamebyId("1");
 
         assertNotNull(games);
@@ -88,6 +101,10 @@ class GamesServiceTest {
         GameEntity entity1 = new GameEntity("1", "Balatro", 1);
 
         when(gameRepository.findById("0")).thenReturn(Optional.empty());
+
+        Counter counterMock = mock(Counter.class);
+        when(metricsRegistry.counter("games.get.id")).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
 
         List<Game> games = gamesService.getGamebyId("0");
 
